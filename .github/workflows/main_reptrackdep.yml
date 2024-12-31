@@ -11,16 +11,17 @@ on:
 
 jobs:
   build:
-    runs-on: 'ubuntu-latest'
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Set up Docker Buildx
-      working-directory: backend
+      working-directory: ./backend
       uses: docker/setup-buildx-action@v2
 
     - name: Log in to registry
+      working-directory: ./backend
       uses: docker/login-action@v2
       with:
         registry: https://reptrackdep.azurecr.io/
@@ -28,11 +29,13 @@ jobs:
         password: ${{ secrets.AzureAppService_ContainerPassword_9a286413e832450e9b7167bdc3ace4bd }}
 
     - name: Build and push container image to registry
+      working-directory: ./backend
       uses: docker/build-push-action@v3
       with:
         push: true
-        tags: reptrackdep.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_c86dda1ba6a141c0ae1a438cb5d60068 }}/reptrackdep/v500:${{ github.sha }}
+        tags: reptrackdep.azurecr.io/reptrackdep/v500:${{ github.sha }}
         file: ./Dockerfile
+        context: ./backend
 
   deploy:
     runs-on: ubuntu-latest
@@ -49,4 +52,4 @@ jobs:
         app-name: 'reptrackdep'
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_967b784af647408e9f1020e0eeb00919 }}
-        images: 'reptrackdep.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_c86dda1ba6a141c0ae1a438cb5d60068 }}/reptrackdep/v500:${{ github.sha }}'
+        images: 'reptrackdep.azurecr.io/reptrackdep/v500:${{ github.sha }}'
